@@ -1,7 +1,7 @@
 import React from 'react';
 import { deckCounts } from '../utils/storage';
 
-export default function StudyPicker({ data, onStartStudy }) {
+export default function StudyPicker({ data, onOpenDeck }) {
   return (
     <div className="screen">
       <div className="page-title">Study</div>
@@ -23,8 +23,7 @@ export default function StudyPicker({ data, onStartStudy }) {
               <button
                 className="btn btn-primary"
                 style={{ width: 'auto', padding: '10px 16px' }}
-                disabled={counts.due === 0}
-                onClick={() => onStartStudy(deck.id, { scope: 'due', type: 'all', tag: '' })}
+                onClick={() => onOpenDeck(deck.id)}
               >
                 Study
               </button>
