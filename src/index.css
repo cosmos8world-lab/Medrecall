@@ -56,7 +56,9 @@ button {
   display: flex;
   flex-direction: column;
   background: var(--bg);
+padding-top: env(safe-area-inset-top);  
 }
+ 
 
 .screen {
   flex: 1;
