@@ -250,6 +250,32 @@ export function overallStats(data) {
   return { total, due, learned, reviewedToday, streak: data.stats.streak || 0 };
 }
 
+
+// How many cards become due on each of the next `days` calendar days, so the
+// person can see their upcoming workload rather than just "X due today".
+// Cards already overdue (nextReview in the past) are all folded into "today".
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function upcomingReviewCounts(data, days = 14) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const buckets = [];
+  for (let i = 0; i < days; i++) {
+    const date = new Date(startOfToday.getTime() + i * DAY_MS);
+    buckets.push({ date, count: 0 });
+  }
+
+  data.cards.forEach((card) => {
+    if (!card.review?.nextReview) return;
+    const due = new Date(card.review.nextReview);
+    let index = Math.floor((due.getTime() - startOfToday.getTime()) / DAY_MS);
+    if (index < 0) index = 0; // overdue cards count toward today
+    if (index < buckets.length) buckets[index].count += 1;
+  });
+
+  return buckets;
+}
 // ---------- Import / Export ----------
 
 export function exportDataAsFile(data) {
