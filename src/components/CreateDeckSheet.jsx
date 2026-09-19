@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Sheet from './Sheet';
 
@@ -8,10 +9,17 @@ const COMMON_SUBJECTS = [
   'Dermatology', 'Psychiatry', 'Radiology', 'Anesthesia',
 ];
 
-export default function CreateDeckSheet({ onClose, onCreate }) {
+export default function CreateDeckSheet({ onClose, onCreate, existingSubjects = [] }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [subject, setSubject] = useState('');
+
+  // Subjects you've already used go first (most relevant), then the common list,
+  // with no duplicates.
+  const subjectChips = [
+    ...existingSubjects,
+    ...COMMON_SUBJECTS.filter((s) => !existingSubjects.includes(s)),
+  ];
 
   function handleCreate() {
     if (!name.trim()) return;
@@ -35,13 +43,19 @@ export default function CreateDeckSheet({ onClose, onCreate }) {
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         placeholder="e.g. Pharmacology"
-        list="medrecall-subjects"
       />
-      <datalist id="medrecall-subjects">
-        {COMMON_SUBJECTS.map((s) => (
-          <option key={s} value={s} />
+      <div className="tag-row" style={{ marginTop: 10 }}>
+        {subjectChips.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`tag-chip suggest ${subject === s ? 'active' : ''}`}
+            onClick={() => setSubject(subject === s ? '' : s)}
+          >
+            {s}
+          </button>
         ))}
-      </datalist>
+      </div>
 
       <label className="field-label">Description (optional)</label>
       <textarea
