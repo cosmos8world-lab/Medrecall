@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import Sheet from './Sheet';
 
@@ -14,17 +12,19 @@ export default function CreateDeckSheet({ onClose, onCreate, existingSubjects = 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [subject, setSubject] = useState('');
+  const [customSubject, setCustomSubject] = useState('');
 
-  // Subjects you've already used go first (most relevant), then the common list,
-  // with no duplicates.
   const subjectChips = [
     ...existingSubjects,
     ...COMMON_SUBJECTS.filter((s) => !existingSubjects.includes(s)),
   ];
 
+  const isOther = subject === '__other__';
+  const finalSubject = isOther ? customSubject : subject;
+
   function handleCreate() {
     if (!name.trim()) return;
-    onCreate(name, description, subject);
+    onCreate(name, description, finalSubject);
   }
 
   return (
@@ -48,7 +48,19 @@ export default function CreateDeckSheet({ onClose, onCreate, existingSubjects = 
         {subjectChips.map((s) => (
           <option key={s} value={s}>{s}</option>
         ))}
+        <option value="__other__">Other…</option>
       </select>
+
+      {isOther && (
+        <input
+          type="text"
+          value={customSubject}
+          onChange={(e) => setCustomSubject(e.target.value)}
+          placeholder="Type your subject"
+          style={{ marginTop: 10 }}
+          autoFocus
+        />
+      )}
 
       <label className="field-label">Description (optional)</label>
       <textarea
@@ -65,3 +77,5 @@ export default function CreateDeckSheet({ onClose, onCreate, existingSubjects = 
     </Sheet>
   );
 }
+
+
