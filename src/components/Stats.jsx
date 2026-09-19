@@ -12,7 +12,14 @@ function dayLabel(date, index) {
 export default function Stats({ data }) {
   const stats = overallStats(data);
   const upcoming = upcomingReviewCounts(data, 14);
-  const maxCount = Math.max(1, ...upcoming.map((b) => b.count));
+
+  // Show the next 7 days individually (the days you'd actually plan around),
+  // then fold days 8-14 into one summary row instead of a long, mostly-empty list.
+  const nextWeek = upcoming.slice(0, 7);
+  const weekAfter = upcoming.slice(7);
+  const weekAfterTotal = weekAfter.reduce((sum, b) => sum + b.count, 0);
+  const maxCount = Math.max(1, ...nextWeek.map((b) => b.count));
+  const nothingUpcoming = upcoming.every((b) => b.count === 0);
 
   const rows = [
     { label: 'Total cards', value: stats.total },
@@ -36,23 +43,41 @@ export default function Stats({ data }) {
 
       <div className="section-title">Upcoming Reviews</div>
       <div className="card">
-        {upcoming.every((b) => b.count === 0) ? (
+        {nothingUpcoming ? (
           <div style={{ color: 'var(--text-muted)', fontSize: 14, padding: '8px 4px' }}>
             Nothing scheduled in the next two weeks.
           </div>
         ) : (
-          upcoming.map((bucket, i) => (
-            <div className="upcoming-row" key={i}>
-              <span className="upcoming-day">{dayLabel(bucket.date, i)}</span>
-              <div className="upcoming-bar-track">
-                <div
-                  className="upcoming-bar-fill"
-                  style={{ width: `${(bucket.count / maxCount) * 100}%` }}
-                />
+          <>
+            {nextWeek.map((bucket, i) => (
+              <div className="upcoming-row" key={i}>
+                <span className="upcoming-day">{dayLabel(bucket.date, i)}</span>
+                {bucket.count > 0 ? (
+                  <>
+                    <div className="upcoming-bar-track">
+                      <div
+                        className="upcoming-bar-fill"
+                        style={{ width: `${(bucket.count / maxCount) * 100}%` }}
+                      />
+                    </div>
+                    <span className="upcoming-count">{bucket.count}</span>
+                  </>
+                ) : (
+                  <span className="upcoming-empty">nothing due</span>
+                )}
               </div>
-              <span className="upcoming-count">{bucket.count}</span>
-            </div>
-          ))
+            ))}
+            {weekAfter.length > 0 && (
+              <div className="upcoming-row upcoming-summary">
+                <span className="upcoming-day">Week after</span>
+                {weekAfterTotal > 0 ? (
+                  <span className="upcoming-empty">{weekAfterTotal} card{weekAfterTotal === 1 ? '' : 's'} scheduled</span>
+                ) : (
+                  <span className="upcoming-empty">nothing due</span>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
