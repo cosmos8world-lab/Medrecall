@@ -44,7 +44,7 @@ export default function CreateDeckSheet({ onClose, onCreate, existingSubjects = 
         onChange={(e) => setSubject(e.target.value)}
         placeholder="e.g. Pharmacology"
       />
-      <div className="tag-row" style={{ marginTop: 10 }}>
+        <div className="chip-scroll-row">
         {subjectChips.map((s) => (
           <button
             key={s}
