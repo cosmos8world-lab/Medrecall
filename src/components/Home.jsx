@@ -65,7 +65,13 @@ export default function Home({ data, onCreateDeck, onOpenDeck }) {
         ))
       )}
 
-      {showCreate && <CreateDeckSheet onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
+          {showCreate && (
+        <CreateDeckSheet
+          onClose={() => setShowCreate(false)}
+          onCreate={handleCreate}
+          existingSubjects={groups.map((g) => g.subject).filter(Boolean)}
+        />
+      )}
     </div>
   );
 }
