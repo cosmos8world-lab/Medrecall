@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import Sheet from './Sheet';
 
@@ -38,24 +39,16 @@ export default function CreateDeckSheet({ onClose, onCreate, existingSubjects = 
       />
 
       <label className="field-label">Subject (optional)</label>
-      <input
-        type="text"
+      <select
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
-        placeholder="e.g. Pharmacology"
-      />
-        <div className="chip-scroll-row">
+        className="field-select"
+      >
+        <option value="">Choose a subject…</option>
         {subjectChips.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`tag-chip suggest ${subject === s ? 'active' : ''}`}
-            onClick={() => setSubject(subject === s ? '' : s)}
-          >
-            {s}
-          </button>
+          <option key={s} value={s}>{s}</option>
         ))}
-      </div>
+      </select>
 
       <label className="field-label">Description (optional)</label>
       <textarea
