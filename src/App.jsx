@@ -107,7 +107,7 @@ export default function App() {
     body = (
       <StudyPicker
         data={data}
-        onStartStudy={(deckId, filters) => setStudySession({ deckId, filters })}
+         onOpenDeck={(id) => setOpenDeckId(id)} 
       />
     );
   } else if (tab === 'stats') {
