@@ -263,15 +263,27 @@ export function upcomingReviewCounts(data, days = 14) {
   const buckets = [];
   for (let i = 0; i < days; i++) {
     const date = new Date(startOfToday.getTime() + i * DAY_MS);
-    buckets.push({ date, count: 0 });
+    buckets.push({ date, count: 0, cards: [] });
   }
+
+  const deckById = new Map(data.decks.map((d) => [d.id, d]));
 
   data.cards.forEach((card) => {
     if (!card.review?.nextReview) return;
     const due = new Date(card.review.nextReview);
     let index = Math.floor((due.getTime() - startOfToday.getTime()) / DAY_MS);
     if (index < 0) index = 0; // overdue cards count toward today
-    if (index < buckets.length) buckets[index].count += 1;
+    if (index < buckets.length) {
+      const deck = deckById.get(card.deckId);
+      buckets[index].count += 1;
+      buckets[index].cards.push({
+        id: card.id,
+        front: card.front,
+        deckId: card.deckId,
+        deckName: deck ? deck.name : 'Unknown deck',
+        subject: deck ? deck.subject : '',
+      });
+    }
   });
 
   return buckets;
