@@ -734,6 +734,15 @@ textarea {
   border-radius: 10px;
   background: var(--surface-2);
   position: relative;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  width: 100%;
+}
+
+.calendar-cell:active {
+  transform: scale(0.95);
 }
 
 .calendar-cell.empty {
