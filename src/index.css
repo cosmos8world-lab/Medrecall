@@ -706,7 +706,28 @@ textarea {
 }
 
 
-.calendar-weekdays {
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.calendar-month-label {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.calendar-month-label:active {
+  background: var(--surface-2);
+}.calendar-weekdays {
+  
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
