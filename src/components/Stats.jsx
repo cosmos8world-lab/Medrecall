@@ -1,23 +1,50 @@
 import React, { useState } from 'react';
-import { overallStats, upcomingReviewCounts } from '../utils/storage';
+import { overallStats, monthGrid } from '../utils/storage';
 import Sheet from './Sheet';
 
 const WEEKDAY_HEADERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_NAMES = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
 const FULL_WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 function formatFullDate(date) {
-  return `${FULL_WEEKDAYS[date.getDay()]}, ${MONTH_NAMES[date.getMonth()]} ${date.getDate()}`;
+  return `${FULL_WEEKDAYS[date.getDay()]}, ${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 export default function Stats({ data }) {
   const stats = overallStats(data);
-  const upcoming = upcomingReviewCounts(data, 14);
+  const today = new Date();
+
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState(null);
 
-  const leadingBlanks = upcoming[0].date.getDay();
-  const cells = [...Array(leadingBlanks).fill(null), ...upcoming];
-  while (cells.length % 7 !== 0) cells.push(null);
+  const cells = monthGrid(data, viewYear, viewMonth);
+
+  function goPrevMonth() {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(viewYear - 1);
+    } else {
+      setViewMonth(viewMonth - 1);
+    }
+  }
+
+  function goNextMonth() {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(viewYear + 1);
+    } else {
+      setViewMonth(viewMonth + 1);
+    }
+  }
+
+  function goToday() {
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+  }
 
   const rows = [
     { label: 'Total cards', value: stats.total },
@@ -52,25 +79,36 @@ export default function Stats({ data }) {
 
       <div className="section-title">Upcoming Reviews</div>
       <div className="card">
+        <div className="calendar-nav">
+          <button type="button" className="btn-icon" onClick={goPrevMonth} aria-label="Previous month">‹</button>
+          <button type="button" className="calendar-month-label" onClick={goToday}>
+            {MONTH_NAMES[viewMonth]} {viewYear}
+          </button>
+          <button type="button" className="btn-icon" onClick={goNextMonth} aria-label="Next month">›</button>
+        </div>
+
         <div className="calendar-weekdays">
           {WEEKDAY_HEADERS.map((d, i) => (
             <div className="calendar-weekday" key={i}>{d}</div>
           ))}
         </div>
         <div className="calendar-grid">
-          {cells.map((bucket, i) => {
-            if (!bucket) return <div className="calendar-cell empty" key={i} />;
-            const isToday = bucket === upcoming[0];
-            const hasCount = bucket.count > 0;
+          {cells.map((cell, i) => {
+            if (!cell) return <div className="calendar-cell empty" key={i} />;
+            const isToday =
+              cell.date.getFullYear() === today.getFullYear() &&
+              cell.date.getMonth() === today.getMonth() &&
+              cell.date.getDate() === today.getDate();
+            const hasCount = cell.count > 0;
             return (
               <button
                 key={i}
                 type="button"
                 className={`calendar-cell ${isToday ? 'today' : ''} ${hasCount ? '' : 'zero'}`}
-                onClick={() => setSelectedDay(bucket)}
+                onClick={() => setSelectedDay(cell)}
               >
-                <span className="cal-date">{bucket.date.getDate()}</span>
-                {hasCount && <span className="cal-count">{bucket.count}</span>}
+                <span className="cal-date">{cell.date.getDate()}</span>
+                {hasCount && <span className="cal-count">{cell.count}</span>}
               </button>
             );
           })}
