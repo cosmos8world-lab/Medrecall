@@ -272,7 +272,7 @@ export function upcomingReviewCounts(data, days = 14) {
     if (!card.review?.nextReview) return;
     const due = new Date(card.review.nextReview);
     let index = Math.floor((due.getTime() - startOfToday.getTime()) / DAY_MS);
-    if (index < 0) index = 0; // overdue cards count toward today
+    if (index < 0) index = 0;
     if (index < buckets.length) {
       const deck = deckById.get(card.deckId);
       buckets[index].count += 1;
@@ -287,6 +287,59 @@ export function upcomingReviewCounts(data, days = 14) {
   });
 
   return buckets;
+}
+
+// Cards due on one specific calendar day. If that day is today, any already-
+// overdue cards (nextReview in the past) are folded in too, same as the rest
+// of the app's "due" definition.
+export function dueCardsOnDate(data, date) {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart.getTime() + DAY_MS);
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const isToday = dayStart.getTime() === now.getTime();
+
+  const deckById = new Map(data.decks.map((d) => [d.id, d]));
+  const cards = [];
+
+  data.cards.forEach((card) => {
+    if (!card.review?.nextReview) return;
+    const due = new Date(card.review.nextReview);
+    const matchesDay = due >= dayStart && due < dayEnd;
+    const overdueOntoToday = isToday && due < dayStart;
+    if (matchesDay || overdueOntoToday) {
+      const deck = deckById.get(card.deckId);
+      cards.push({
+        id: card.id,
+        front: card.front,
+        deckId: card.deckId,
+        deckName: deck ? deck.name : 'Unknown deck',
+        subject: deck ? deck.subject : '',
+      });
+    }
+  });
+
+  return cards;
+}
+
+// A full navigable month grid: every day of the given month (0-11), padded
+// with leading/trailing blanks so it lines up as real calendar weeks.
+export function monthGrid(data, year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const leadingBlanks = new Date(year, month, 1).getDay();
+
+  const days = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const cards = dueCardsOnDate(data, date);
+    days.push({ date, cards, count: cards.length });
+  }
+
+  const cells = [...Array(leadingBlanks).fill(null), ...days];
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
 }
 // ---------- Import / Export ----------
 
